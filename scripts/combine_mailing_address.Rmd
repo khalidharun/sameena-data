@@ -1,0 +1,65 @@
+---
+title: "Create Direct Mail List"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r "setup", include=FALSE}
+library(gdata)
+DATA_DIR <- "../data"
+RESULT_DIR <- "../results"
+
+INPUT_FILENAME = "NewMail20180205-21275515603.csv"
+```
+
+
+```{r}
+# LOAD DATA
+filename <- file.path(DATA_DIR, INPUT_FILENAME)
+df_van_data <- read.csv(filename, stringsAsFactors = FALSE)
+```
+
+```{r}
+# CLEAN DATA
+attach(df_van_data)
+df_clean <- data.frame(
+  VanID = Voter.File.VANID, 
+  EnvName = paste(FirstName, LastName),
+  City = mCity,
+  State = mState,
+  Zip5 = substr(mZip5, 3, 7),
+  Zip4 = substr(mZip4, 3, 6),
+  Address = mAddress
+)
+df_clean <- df_clean[order(df_clean$Address), ]
+detach(df_van_data)
+```
+
+```{r}
+# FIND DUPLICATE ADDRESS
+df <- df_clean
+combine_names <- function(names) {
+  # print(names)
+  if(length(names) > 2) {
+    "Our neighbors at..."
+  } else {
+    paste(names, collapse=" and ")
+  }
+}
+df_combined <- aggregate(list(EnvName=df$EnvName), 
+                         by=list(
+                           Address=df$Address, 
+                           City=df$City, 
+                           Zip5=df$Zip5, 
+                           Zip4=df$Zip4, 
+                           State=df$State),
+                         FUN=combine_names)
+```
+
+
+```{r}
+# EXPORT TO CSV
+filename <- file.path(RESULT_DIR, "mailing_list.csv")
+write.csv(df_combined, file = filename)
+```
