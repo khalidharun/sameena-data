@@ -7,8 +7,9 @@ output:
 
 ```{r "setup", include=FALSE}
 library(gdata)
-DATA_DIR <- "../data"
-RESULT_DIR <- "../results"
+PROJ_DIR <- "~/Projects/SameenaForCongress"
+DATA_DIR <- file.path(PROJ_DIR, "data")
+RESULT_DIR <- file.path(PROJ_DIR, "results")
 
 INPUT_FILENAME = "NewMail20180205-21275515603.csv"
 ```
