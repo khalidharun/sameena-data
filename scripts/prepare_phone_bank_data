@@ -1,0 +1,26 @@
+#!/usr/bin/env Rscript
+library("optparse")
+library("magrittr")
+source("scripts/phone_bank.R")
+
+option_list = list(
+  make_option(c("-o", "--out"), type="character", default="out.csv",
+              help="output file name [default= %default]", metavar="character")
+);
+
+opt_parser = OptionParser(option_list=option_list);
+opts = parse_args(opt_parser, positional_arguments = TRUE);
+print(opts$options)
+
+filenames <- opts$args %>% as.list
+print(filenames)
+trace <- function(x, msg) { print(paste(msg, x)); x }
+df_data_cleaned <- filenames %>% lapply(read.csv, stringsAsFactors=FALSE) %>% lapply(clean_data)
+outcomes_los_values <- df_data_cleaned %>% lapply(get_unique_outcomes) %>% Reduce(c, .) %>% unique %>% grep("\\d", ., value = TRUE)
+df_phone_bank_los <- df_data_cleaned %>% lapply(extract_los, outcomes_los_values)
+
+# # Combine and export data
+rbind.custom <- function(x,y) { rbind(x, y, stringsAsFactors=FALSE)}
+df_combined <- Reduce(rbind.custom, df_phone_bank_los)
+df_sorted <- df_combined[order(df_combined$Level_of_Support), ]
+write.csv(df_sorted, file=opts$options$out)

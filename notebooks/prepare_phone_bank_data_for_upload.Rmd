@@ -1,8 +1,8 @@
 ---
 title: "Combine JD and SmartVan Data"
 output:
-  html_document:
-    df_print: paged
+html_document:
+df_print: paged
 ---
 
 ```{r}
@@ -10,7 +10,7 @@ output:
 library(magrittr)
 PROJ_DIR <- "~/Projects/SameenaForCongress"
 DATA_DIR <- file.path(PROJ_DIR, "/data/sameenaphonebankingdata/")
-EXPORT_DIR <- file.path("results")
+EXPORT_DIR <- file.path(PROJ_DIR, "results")
 
 options(stringsAsFactors = FALSE)
 filenames <- list.files(DATA_DIR, pattern = "(IL05|sameena).*csv")
@@ -19,50 +19,26 @@ df_data_phone_bank <- filenames %>% file.path(DATA_DIR, .) %>% lapply(read.csv, 
 ```
 ```{r}
 # Clean data
-identify_outcome_colname <- function(df) {
-  outcome_cols <- 
-  df %>% colnames %>% intersect(outcome_cols)
-}
-
 clean_data <- function(df) {
   extract_field <- function(possible_fields) {
     fields <- colnames(df)
     df[[intersect(fields, possible_fields)]]
   }
-  
-  rename_field <- function(field_name, fields_possible) {
-    idx <- which(colnames(df) %in% fields_possible)
-    if(length(idx) != 1) {
-      print(paste("Error cleaning data:", field_name, "|", fields_possible))
-    } else {
-      print(paste("Renaming: ", colnames(df)[idx], "->", field_name))
-    }
-    new_colnames <- colnames(df)
-    new_colnames[idx] <- field_name
-    colnames(df) <- new_colnames
-  }
-  
+
   df_out <- data.frame(
-    VanID     = extract_field(c('VoterID', 'Voter.ID')),
-    FirstName = extract_field(c('first.name', 'Voter.First.Name')),
-    LastName  = extract_field(c('last.name', 'Voter.Last.Name')),
-    Outcome   = extract_field(c('Result', 'Custom.Outcome', 'Level_of_Support')),
-    stringsAsFactors = FALSE
-  )
-  # rename_field("Outcome",   c('Result', 'Custom.Outcome', 'Level_of_Support'))
-  # rename_field("VanID",     c('VoterID', 'Voter.ID'))
-  # rename_field("FirstName", c('first.name', 'Voter.First.Name'))
-  # rename_field("LastName",  c('last.name', 'Voter.Last.Name'))
-  
-  print(colnames(df_out))
-  df_out
+                       VanID     = extract_field(c('VoterID', 'Voter.ID')) %>% sprintf("%7.7d", .),
+                       FirstName = extract_field(c('first.name', 'Voter.First.Name')),
+                       LastName  = extract_field(c('last.name', 'Voter.Last.Name')),
+                       Outcome   = extract_field(c('Result', 'Custom.Outcome', 'Level_of_Support')),
+                       stringsAsFactors = FALSE
+                       )
 }
 
 df_data_cleaned <- df_data_phone_bank %>% lapply(clean_data)
 ```
 ```{r}
 # Identify all the Level of Support outcomes in the dataset.
-get_unique_outcomes <- function(df) { 
+get_unique_outcomes <- function(df) {
   df$Outcome %>% unique
 }
 outcomes_all <- df_data_cleaned %>% lapply(get_unique_outcomes) %>% Reduce(c, .) %>% unique
@@ -71,10 +47,25 @@ outcomes_los_values <- grep("\\d", outcomes_all, value = TRUE)
 
 ```{r}
 # Extract LOS data
+LOS_map <- list(
+                "8 - Not Voting"         = "Not Voting",
+                "5 - Strong Opponent"   = "Strong Against",
+                "4 - Lean Opponent"    = "Lean Against",
+                "3 - Undecided"    = "Undecided",
+                "2 - Lean Sameena"  = "Lean Sameena",
+                "1 - Strong Sameena"   = "Strong Sameena",
+                "6 - Lean Other"    = "Lean Against",
+                "7 - Strong Other"      = "Strong Against",
+                "1 - Strong Sameena - Volunteer Yes"  = "Strong Sameena",
+                "1 - Strong Mustafa"   = "Strong Sameena",
+                "2 - Lean Mustafa"    = "Lean Sameena",
+                "4 - Lean Opponent "  = "Lean Against"
+                )
+
 extract_los <- function(df, outcome_los_values) {
   los_idx <- which(df$Outcome %in% outcomes_los_values)
-  df_los <- df[los_idx, ] 
-  transform(df_los, Level_of_Support=Outcome)
+  df_los <- df[los_idx, ]
+  transform(df_los, Level_of_Support=LOS_map[Outcome] %>% Reduce(c, .))
 }
 
 df_phone_bank_los <- df_data_cleaned %>% lapply(extract_los, outcomes_los_values)
