@@ -38,8 +38,18 @@ LOS_map <- list(
                 "4 - Lean Opponent "  = "Lean Against"
                 )
 
-extract_los <- function(df, outcome_los_values) {
+extract_los <- function(df, outcomes_los_values) {
   los_idx <- which(df$Outcome %in% outcomes_los_values)
   df_los <- df[los_idx, ]
   transform(df_los, Level_of_Support=LOS_map[Outcome] %>% Reduce(c, .))
+}
+
+prepare_phone_bank_files <- function(filenames) {
+  df_data_cleaned <- filenames %>% lapply(read.csv, stringsAsFactors=FALSE) %>% lapply(clean_data)
+  outcomes_los_values <- df_data_cleaned %>% lapply(get_unique_outcomes) %>% Reduce(c, .) %>% unique %>% grep("\\d", ., value = TRUE)
+  df_phone_bank_los <- df_data_cleaned %>% lapply(extract_los, outcomes_los_values)
+  # # Combine and export data
+  rbind.custom <- function(x,y) { rbind(x, y, stringsAsFactors=FALSE)}
+  df_combined <- Reduce(rbind.custom, df_phone_bank_los)
+  df_sorted <- df_combined[order(df_combined$Level_of_Support), ]
 }

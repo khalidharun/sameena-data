@@ -10,17 +10,13 @@ option_list = list(
 
 opt_parser = OptionParser(option_list=option_list);
 opts = parse_args(opt_parser, positional_arguments = TRUE);
-print(opts$options)
 
-filenames <- opts$args %>% as.list
-print(filenames)
-trace <- function(x, msg) { print(paste(msg, x)); x }
-df_data_cleaned <- filenames %>% lapply(read.csv, stringsAsFactors=FALSE) %>% lapply(clean_data)
-outcomes_los_values <- df_data_cleaned %>% lapply(get_unique_outcomes) %>% Reduce(c, .) %>% unique %>% grep("\\d", ., value = TRUE)
-df_phone_bank_los <- df_data_cleaned %>% lapply(extract_los, outcomes_los_values)
+output_filename <- opts$options$out
 
-# # Combine and export data
-rbind.custom <- function(x,y) { rbind(x, y, stringsAsFactors=FALSE)}
-df_combined <- Reduce(rbind.custom, df_phone_bank_los)
-df_sorted <- df_combined[order(df_combined$Level_of_Support), ]
-write.csv(df_sorted, file=opts$options$out)
+print("Processing data files: ")
+print(paste(opts$args))
+input_filenames <- opts$args %>% as.list
+df_processed <- prepare_phone_bank_files(input_filenames)
+
+print(paste("Writing output to file: ", output_filename))
+write.csv(df_processed, file=output_filename)
