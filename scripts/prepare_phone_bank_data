@@ -9,7 +9,7 @@ option_list = list(
 );
 
 opt_parser = OptionParser(option_list=option_list);
-opts = parse_args(opt_parser, positional_arguments = TRUE);
+opts = parse_args2(opt_parser);
 
 output_filename <- opts$options$out
 
