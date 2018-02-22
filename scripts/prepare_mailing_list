@@ -1,0 +1,29 @@
+#!/usr/bin/env Rscript
+
+library("optparse")
+library("magrittr")
+source("scripts/mailing_list.R")
+
+option_list = list(
+  make_option(c("-o", "--out"), type="character", default="out.csv",
+              help="output file name [default= %default]", metavar="character")
+);
+
+opt_parser = OptionParser(option_list=option_list);
+opts = parse_args2(opt_parser);
+
+input_filenames <- opts$args %>% as.list
+output_filename <- opts$options$out
+
+write_console <- function(x) {
+  write(x, file="")
+}
+
+write_console("Input files:")
+write_console(paste("-", input_filenames))
+df_processed <- prepare_mailing_list(input_filenames)
+
+write_console("Output files:")
+write_console(paste("-", output_filename))
+write.csv(df_processed, file=output_filename)
+write_console("Done.")
