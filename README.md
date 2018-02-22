@@ -11,11 +11,15 @@ install.packages(c('magrittr', 'gdata', 'optparse'))
 ```
 
 ## Usage
+
+### Prepare Phone Bank Data
 ```
-Rscript  -o <output-file-path> <input-file-path-1>  <input-file-path-2>
+Rscript scripts/prepare_phone_bank_data FILE1 [FILE2 ...] [-o OUTPUT_PATH]
+Rscript scripts/prepare_phone_bank_data data/sameena-mustafa-02-07-2018-433922415.csv data/sameena-mustafa-02-08-2018-857422284.csv -o output.los.csv
 ```
 
-Example:
+### Prepare Mailing List
 ```
-Rscript -o output.csv scripts/prepare_phone_bank_data data/sameenaphonebankingdata/sameena-mustafa-02-07-2018-433922415.csv data/sameenaphonebankingdata/sameena-mustafa-02-08-2018-857422284.csv
+Rscript scripts/prepare_mailing_list FILE1 [FILE2 ...] [-o OUTPUT_PATH]
+Rscript scripts/prepare_mailing_list data/NewMail20180205-21275515603.csv -o output.mail.csv
 ```
