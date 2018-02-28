@@ -5,8 +5,8 @@ clean_data <- function(df) {
                          EnvName = paste(FirstName, LastName),
                          City = mCity,
                          State = mState,
-                         Zip5 = substr(mZip5, 3, 7),
-                         Zip4 = substr(mZip4, 3, 6),
+                         Zip5 = sprintf("%5.5d", mZip5 )  %>% replace(., . == "   NA", ""), #substr(mZip5, 3, 7),
+                         Zip4 = sprintf("%4.4d", mZip4 )  %>% replace(., . == "  NA", ""), #substr(mZip4, 3, 7),
                          Address = mAddress
                          )
   df_clean <- df_clean[order(df_clean$Address), ]
@@ -34,6 +34,6 @@ combine_mailing_addresses <- function(df) {
 }
 
 prepare_mailing_list <- function(filenames) {
-  df_data_cleaned <- filenames %>% lapply(read.csv, stringsAsFactors=FALSE) %>% lapply(clean_data)
+  df_data_cleaned <- filenames %>% lapply(read.csv, stringsAsFactors=FALSE, skipNul=TRUE) %>% lapply(clean_data)
   df_data_cleaned %>% Reduce(rbind, .) %>% combine_mailing_addresses
 }
