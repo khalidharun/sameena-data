@@ -33,6 +33,7 @@ LOS_map <- list(
                 "6 - Lean Other"    = "Lean Against",
                 "7 - Strong Other"      = "Strong Against",
                 "1 - Strong Sameena - Volunteer Yes"  = "Strong Sameena",
+                "1 - Strong Mustafa - Volunteer YES"  = "Strong Sameena",
                 "1 - Strong Mustafa"   = "Strong Sameena",
                 "2 - Lean Mustafa"    = "Lean Sameena",
                 "4 - Lean Opponent "  = "Lean Against"

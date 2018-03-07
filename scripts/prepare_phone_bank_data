@@ -5,14 +5,14 @@ library("magrittr")
 source("scripts/phone_bank.R")
 
 option_list = list(
-  make_option(c("-o", "--out"), type="character", default="out.csv",
+  make_option(c("-o", "--out"), type="character", default="out.phonebank.csv",
               help="output file name [default= %default]", metavar="character")
 );
 
 opt_parser = OptionParser(option_list=option_list);
 opts = parse_args2(opt_parser);
 
-input_filenames <- opts$args %>% as.list
+input_filenames <- opts$args %>% Sys.glob %>% as.list
 output_filename <- opts$options$out
 
 write_console <- function(x) {
